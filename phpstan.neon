@@ -1,0 +1,21 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - app
+        - routes
+
+    excludePaths:
+        - tests/*
+        - bootstrap/*
+        - database/*
+        - public/*
+        - resources/*
+        - node_modules/*
+        - storage/*
+        - vendor/*
+
+    inferPrivatePropertyTypeFromConstructor: true

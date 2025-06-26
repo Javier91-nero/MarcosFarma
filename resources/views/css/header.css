@@ -1,0 +1,59 @@
+.header {
+    background-color: #2a9d8f;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor para logo + texto */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem; /* espacio entre imagen y texto */
+}
+
+/* Imagen del logo */
+.logo-container img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Texto del logo */
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Enlace dentro del logo */
+.logo a {
+    text-decoration: none;
+    color: white;  /* Mantener color blanco en todo momento */
+}
+
+.logo a:hover,
+.logo a:focus {
+    color: white; /* Asegurar que el color se mantenga blanco al hacer hover o focus */
+}
+
+/* Navegación */
+.nav ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav a:hover {
+    color: #e9c46a;
+}
