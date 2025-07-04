@@ -9,6 +9,8 @@ use App\Http\Controllers\DProductController;
 use App\Http\Controllers\PerfilController; 
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\CarritoController;
 
 // Página principal
 Route::get('/', function () {
@@ -58,3 +60,12 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+Route::get('/mis-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+Route::get('/mis-pedidos/{id}', [PedidoController::class, 'show'])->name('pedidos.show');
+Route::post('/mis-pedidos/{id}/repetir', [PedidoController::class, 'repetir'])->name('pedidos.repetir');
+
+Route::post('/carrito/agregar', [CarritoController::class, 'agregar'])->name('carrito.agregar');
+Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito.mostrar');
+Route::get('/carrito/eliminar/{id}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
+Route::get('/carrito/vaciar', [CarritoController::class, 'vaciar'])->name('carrito.vaciar');

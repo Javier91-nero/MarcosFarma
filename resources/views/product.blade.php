@@ -16,12 +16,9 @@
     <div class="card shadow-sm mb-5 border-0 rounded-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
-                {{-- Búsqueda --}}
                 <div class="col-md-6">
                     <input type="search" id="buscarInput" class="form-control form-control-lg" placeholder="Buscar por nombre de producto...">
                 </div>
-
-                {{-- Filtro por Oferta --}}
                 <div class="col-md-3">
                     <select id="filtroOferta" class="form-select form-select-lg">
                         <option value="todos" selected>Todos los productos</option>
@@ -29,8 +26,6 @@
                         <option value="sinOferta">Sin oferta</option>
                     </select>
                 </div>
-
-                {{-- Filtro por Precio --}}
                 <div class="col-md-3">
                     <select id="filtroPrecio" class="form-select form-select-lg">
                         <option value="todos" selected>Todos los precios</option>
@@ -47,12 +42,12 @@
     <div class="row" id="productosGrid">
         @forelse ($productos as $producto)
             <div class="col-12 col-sm-6 col-lg-3 mb-4 producto-item"
-                data-nombre="{{ strtolower($producto->nombre) }}"
-                data-oferta="{{ $producto->oferta }}"
-                data-precio="{{ $producto->precio }}">
+                 data-nombre="{{ strtolower($producto->nombre) }}"
+                 data-oferta="{{ $producto->oferta }}"
+                 data-precio="{{ $producto->precio }}">
                 <div class="card h-100 shadow rounded-4 border-0 position-relative">
 
-                    {{-- Etiqueta de Oferta --}}
+                    {{-- Oferta --}}
                     @if ($producto->oferta)
                         <span class="badge bg-danger position-absolute top-0 start-0 m-3 fs-6">
                             <i class="bi bi-tag-fill me-1"></i> Oferta
@@ -72,10 +67,15 @@
                             <strong>Precio:</strong> S/ {{ number_format($producto->precio, 2) }}
                         </p>
                         <p class="card-text text-muted flex-grow-1 fs-6 text-center">{{ $producto->descripcion }}</p>
-                        <button class="btn btn-primary mt-3 w-100 d-flex align-items-center justify-content-center gap-2"
-                                onclick="agregarAlCarrito({{ $producto->id_producto }})">
-                            <i class="bi bi-cart-plus fs-5"></i> Agregar al Carrito
-                        </button>
+
+                        <form action="{{ route('carrito.agregar') }}" method="POST" class="mt-3">
+                            @csrf
+                            <input type="hidden" name="id_producto" value="{{ $producto->id_producto }}">
+                            <input type="hidden" name="cantidad" value="1">
+                            <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-cart-plus fs-5"></i> Agregar al Carrito
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
