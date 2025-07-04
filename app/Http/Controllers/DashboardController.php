@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardController extends Controller
 {
-    // Verifica el token tras el login
     public function validarToken(Request $request)
     {
         $token = $request->query('token');
@@ -39,7 +38,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Muestra el dashboard solo si es admin
     public function mostrarDashboard()
     {
         if (!session()->has('token') || session('rol') !== 'admin') {
@@ -49,14 +47,37 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Gráfico de pedidos por mes
-        $pedidosPorMes = DB::table('pedidos')
-            ->select(DB::raw('MONTH(fecha) as mes'), DB::raw('COUNT(*) as cantidad'))
-            ->groupBy(DB::raw('MONTH(fecha)'))
-            ->pluck('cantidad', 'mes')
-            ->toArray(); // 👈 NECESARIO
+        // 🧮 Métricas superiores
+        $totalClientes = DB::table('cliente')->count();
+        $totalProductos = DB::table('productos')->count();
+        $productosPorVencer = DB::table('lotes')
+            ->whereBetween('fecha_vencimiento', [now(), now()->addDays(30)])
+            ->count();
 
-        // Últimos 5 pedidos
+        $productoMasVendido = DB::table('detalle_pedido as dp')
+            ->join('productos as p', 'dp.id_producto', '=', 'p.id_producto')
+            ->select('p.nombre', DB::raw('SUM(dp.cantidad) as total'))
+            ->groupBy('p.id_producto', 'p.nombre')
+            ->orderByDesc('total')
+            ->first();
+
+        // 📊 Productos más vendidos (para gráfico circular)
+        $masVendidos = DB::table('detalle_pedido as dp')
+            ->join('productos as p', 'dp.id_producto', '=', 'p.id_producto')
+            ->select('p.nombre', DB::raw('SUM(dp.cantidad) as total'))
+            ->groupBy('p.nombre')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        // 📈 Clientes registrados por mes (para gráfico de barras)
+        $clientesPorMes = DB::table('cliente')
+            ->select(DB::raw('MONTH(created_at) as mes'), DB::raw('COUNT(*) as cantidad'))
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->pluck('cantidad', 'mes')
+            ->toArray();
+
+        // 📋 Últimos 5 pedidos
         $ultimosPedidos = DB::table('pedidos')
             ->join('cliente', 'pedidos.id_cliente', '=', 'cliente.id_cliente')
             ->select('pedidos.id_pedido', 'cliente.nombre', 'pedidos.total', 'pedidos.fecha')
@@ -64,7 +85,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Productos críticos (vencidos o en 0)
+        // 🚨 Productos críticos (vencidos o en 0)
         $productosCriticos = DB::table('productos as p')
             ->join('lotes as l', 'p.id_producto', '=', 'l.id_producto')
             ->where(function ($query) {
@@ -75,15 +96,19 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard.index', [
-            'nombre'            => session('nombre'),
-            'token'             => session('token'),
-            'pedidosPorMes'     => $pedidosPorMes, // 👈 Ya como array
-            'ultimosPedidos'    => $ultimosPedidos,
-            'productosCriticos' => $productosCriticos
+            'nombre'              => session('nombre'),
+            'token'               => session('token'),
+            'totalClientes'       => $totalClientes,
+            'totalProductos'      => $totalProductos,
+            'productosPorVencer'  => $productosPorVencer,
+            'productoMasVendido'  => $productoMasVendido,
+            'masVendidos'         => $masVendidos,
+            'clientesPorMes'      => $clientesPorMes,
+            'ultimosPedidos'      => $ultimosPedidos,
+            'productosCriticos'   => $productosCriticos
         ]);
     }
 
-    // Exportar pedidos a CSV
     public function exportarCSV()
     {
         $pedidos = DB::table('pedidos')
