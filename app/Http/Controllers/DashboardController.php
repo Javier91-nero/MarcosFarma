@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardController extends Controller
 {
-    // Verifica el token tras el login y guarda los datos en sesión
+    // Verifica el token tras el login
     public function validarToken(Request $request)
     {
         $token = $request->query('token');
@@ -22,7 +23,6 @@ class DashboardController extends Controller
             ->first();
 
         if ($admin) {
-            // Guardar datos en la sesión
             session([
                 'id_cliente' => $admin->id_cliente,
                 'nombre'     => $admin->nombre,
@@ -30,7 +30,6 @@ class DashboardController extends Controller
                 'token'      => $admin->token,
             ]);
 
-            // Redirigir a dashboard sin el token en URL
             return redirect()->route('dashboard.index');
         }
 
@@ -40,7 +39,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Muestra el dashboard solo si el usuario es admin y tiene sesión activa
+    // Muestra el dashboard solo si es admin
     public function mostrarDashboard()
     {
         if (!session()->has('token') || session('rol') !== 'admin') {
@@ -50,9 +49,68 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Gráfico de pedidos por mes
+        $pedidosPorMes = DB::table('pedidos')
+            ->select(DB::raw('MONTH(fecha) as mes'), DB::raw('COUNT(*) as cantidad'))
+            ->groupBy(DB::raw('MONTH(fecha)'))
+            ->pluck('cantidad', 'mes')
+            ->toArray(); // 👈 NECESARIO
+
+        // Últimos 5 pedidos
+        $ultimosPedidos = DB::table('pedidos')
+            ->join('cliente', 'pedidos.id_cliente', '=', 'cliente.id_cliente')
+            ->select('pedidos.id_pedido', 'cliente.nombre', 'pedidos.total', 'pedidos.fecha')
+            ->orderByDesc('pedidos.fecha')
+            ->limit(5)
+            ->get();
+
+        // Productos críticos (vencidos o en 0)
+        $productosCriticos = DB::table('productos as p')
+            ->join('lotes as l', 'p.id_producto', '=', 'l.id_producto')
+            ->where(function ($query) {
+                $query->where('l.fecha_vencimiento', '<', now())
+                      ->orWhere('l.cantidad', '<=', 0);
+            })
+            ->select('p.nombre', 'l.nro_lote', 'l.fecha_vencimiento', 'l.cantidad')
+            ->get();
+
         return view('dashboard.index', [
-            'nombre' => session('nombre'),
-            'token'  => session('token'),
+            'nombre'            => session('nombre'),
+            'token'             => session('token'),
+            'pedidosPorMes'     => $pedidosPorMes, // 👈 Ya como array
+            'ultimosPedidos'    => $ultimosPedidos,
+            'productosCriticos' => $productosCriticos
         ]);
+    }
+
+    // Exportar pedidos a CSV
+    public function exportarCSV()
+    {
+        $pedidos = DB::table('pedidos')
+            ->join('cliente', 'pedidos.id_cliente', '=', 'cliente.id_cliente')
+            ->select('pedidos.id_pedido', 'cliente.nombre', 'pedidos.total', 'pedidos.fecha')
+            ->orderByDesc('pedidos.fecha')
+            ->get();
+
+        $response = new StreamedResponse(function () use ($pedidos) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'Cliente', 'Total', 'Fecha']);
+
+            foreach ($pedidos as $pedido) {
+                fputcsv($handle, [
+                    $pedido->id_pedido,
+                    $pedido->nombre,
+                    $pedido->total,
+                    $pedido->fecha,
+                ]);
+            }
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="pedidos.csv"');
+
+        return $response;
     }
 }

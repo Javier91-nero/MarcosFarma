@@ -42,6 +42,9 @@ Route::get('/dashboard/validation', [DashboardController::class, 'validarToken']
 
 // Dashboard principal
 Route::get('/dashboard', [DashboardController::class, 'mostrarDashboard'])->name('dashboard.index');
+Route::get('/dashboard/validar-token', [DashboardController::class, 'validarToken'])->name('dashboard.validar');
+Route::get('/dashboard/exportar-csv', [DashboardController::class, 'exportarCSV'])->name('dashboard.export.csv');
+
 
 // CRUD de productos para admin
 Route::get('/products', [DProductController::class, 'index'])->name('product.index');
@@ -74,4 +77,3 @@ Route::post('/carrito/eliminar', [CarritoController::class, 'eliminar'])->name('
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/procesar', [CheckoutController::class, 'procesar'])->name('checkout.procesar');
 Route::post('/checkout', [CheckoutController::class, 'realizar'])->name('checkout.realizar');
-
