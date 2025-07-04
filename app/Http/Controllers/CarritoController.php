@@ -9,47 +9,61 @@ class CarritoController extends Controller
 {
     public function agregar(Request $request)
     {
-        $productoId = $request->input('id_producto');
-        $cantidad = $request->input('cantidad', 1);
-
-        $producto = Producto::findOrFail($productoId);
+        $producto = Producto::findOrFail($request->input('id_producto'));
 
         $carrito = session()->get('carrito', []);
 
-        if (isset($carrito[$productoId])) {
-            $carrito[$productoId]['cantidad'] += $cantidad;
+        $id = $producto->id_producto;
+
+        if (isset($carrito[$id])) {
+            $carrito[$id]['cantidad'] += $request->input('cantidad', 1);
         } else {
-            $carrito[$productoId] = [
+            $carrito[$id] = [
                 'id' => $producto->id_producto,
                 'nombre' => $producto->nombre,
                 'precio' => $producto->precio,
                 'imagen' => $producto->imagen,
-                'cantidad' => $cantidad
+                'cantidad' => $request->input('cantidad', 1),
             ];
         }
 
-        session()->put('carrito', $carrito);
+        session(['carrito' => $carrito]);
 
-        return redirect()->back()->with('status', 'Producto agregado al carrito.');
+        return redirect()->back()->with('success', 'Producto agregado al carrito');
     }
 
     public function mostrar()
     {
-        $carrito = session('carrito', []);
+        $carrito = session()->get('carrito', []);
         return view('carrito.index', compact('carrito'));
     }
 
-    public function eliminar($id)
+    public function actualizar(Request $request)
     {
+        $id = $request->input('id_producto');
+        $cantidad = max((int) $request->input('cantidad'), 1);
+
         $carrito = session()->get('carrito', []);
-        unset($carrito[$id]);
-        session()->put('carrito', $carrito);
-        return redirect()->route('carrito.mostrar')->with('status', 'Producto eliminado del carrito.');
+
+        if (isset($carrito[$id])) {
+            $carrito[$id]['cantidad'] = $cantidad;
+            session(['carrito' => $carrito]);
+        }
+
+        return redirect()->route('carrito.mostrar')->with('success', 'Cantidad actualizada');
     }
 
-    public function vaciar()
+    public function eliminar(Request $request)
     {
-        session()->forget('carrito');
-        return redirect()->route('carrito.mostrar')->with('status', 'Carrito vaciado correctamente.');
+        $id = $request->input('id_producto');
+
+        $carrito = session()->get('carrito', []);
+
+        if (isset($carrito[$id])) {
+            unset($carrito[$id]);
+            session(['carrito' => $carrito]);
+        }
+
+        return redirect()->route('carrito.mostrar')->with('success', 'Producto eliminado del carrito');
     }
 }

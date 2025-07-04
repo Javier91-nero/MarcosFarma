@@ -1,3 +1,8 @@
+@php
+    $carrito = session('carrito', []);
+    $totalItems = array_sum(array_column($carrito, 'cantidad'));
+@endphp
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-2">
     <div class="container d-flex justify-content-between align-items-center">
 
@@ -34,6 +39,18 @@
                 <li class="nav-item">
                     <a href="{{ url('/nosotros') }}" class="nav-link text-white fw-medium d-flex align-items-center">
                         <i class="bi bi-people-fill me-2"></i> Nosotros
+                    </a>
+                </li>
+
+                {{-- Carrito --}}
+                <li class="nav-item">
+                    <a href="{{ url('/carrito') }}" class="nav-link text-white fw-medium d-flex align-items-center position-relative">
+                        <i class="bi bi-cart-fill me-2"></i> Carrito
+                        @if($totalItems > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                                {{ $totalItems }}
+                            </span>
+                        @endif
                     </a>
                 </li>
 

@@ -1,61 +1,89 @@
 @extends('layouts.app')
 
-@section('title', 'Mi Carrito')
+@section('title', 'Mi Carrito - MarcosFarma')
 
 @section('content')
 <div class="container py-5">
-    <h2 class="mb-4 text-primary">🛒 Mi Carrito</h2>
+    <h2 class="text-center fw-bold mb-4 text-primary">
+        <i class="bi bi-cart-check me-2"></i>Mi Carrito
+    </h2>
 
-    @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+    @if(session('success'))
+        <div class="alert alert-success text-center">
+            {{ session('success') }}
+        </div>
     @endif
 
     @if(empty($carrito))
-        <div class="alert alert-warning">Tu carrito está vacío.</div>
-        <a href="{{ url('/catalog') }}" class="btn btn-success mt-3">Ver productos</a>
+        <div class="alert alert-warning text-center">
+            <i class="bi bi-exclamation-triangle me-2"></i>No hay productos en el carrito.
+        </div>
+        <div class="text-center">
+            <a href="{{ url('/catalog') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Ir al catálogo
+            </a>
+        </div>
     @else
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $total = 0; @endphp
-                @foreach($carrito as $item)
-                    @php
-                        $subtotal = $item['precio'] * $item['cantidad'];
-                        $total += $subtotal;
-                    @endphp
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
                     <tr>
-                        <td>{{ $item['nombre'] }}</td>
-                        <td>S/ {{ number_format($item['precio'], 2) }}</td>
-                        <td>{{ $item['cantidad'] }}</td>
-                        <td>S/ {{ number_format($subtotal, 2) }}</td>
-                        <td>
-                            <a href="{{ route('carrito.eliminar', $item['id']) }}" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i> Quitar
-                            </a>
-                        </td>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acción</th>
                     </tr>
-                @endforeach
-                <tr>
-                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                    <td colspan="2"><strong>S/ {{ number_format($total, 2) }}</strong></td>
-                </tr>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @php $total = 0; @endphp
+                    @foreach($carrito as $item)
+                        @php
+                            $subtotal = $item['precio'] * $item['cantidad'];
+                            $total += $subtotal;
+                        @endphp
+                        <tr>
+                            <td><img src="{{ asset($item['imagen']) }}" width="80" alt="{{ $item['nombre'] }}"></td>
+                            <td>{{ $item['nombre'] }}</td>
+                            <td>S/ {{ number_format($item['precio'], 2) }}</td>
+                            <td>
+                                <form action="{{ route('carrito.actualizar') }}" method="POST" class="d-flex justify-content-center align-items-center">
+                                    @csrf
+                                    <input type="hidden" name="id_producto" value="{{ $item['id'] }}">
+                                    <input type="number" name="cantidad" value="{{ $item['cantidad'] }}" min="1" class="form-control form-control-sm me-2" style="width: 70px;">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>S/ {{ number_format($subtotal, 2) }}</td>
+                            <td>
+                                <form action="{{ route('carrito.eliminar') }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?')">
+                                    @csrf
+                                    <input type="hidden" name="id_producto" value="{{ $item['id'] }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    <tr class="table-light fw-bold">
+                        <td colspan="4" class="text-end">Total:</td>
+                        <td colspan="2">S/ {{ number_format($total, 2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <div class="d-flex justify-content-between">
-            <a href="{{ route('carrito.vaciar') }}" class="btn btn-outline-danger">Vaciar carrito</a>
-            <form action="{{ route('pedidos.guardar') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-primary">Realizar Pedido</button>
-            </form>
+        <div class="text-end">
+            <a href="{{ url('/catalog') }}" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left-circle me-1"></i> Seguir Comprando
+            </a>
+            <a href="#" class="btn btn-success">
+                <i class="bi bi-credit-card-2-front me-1"></i> Proceder al Pago
+            </a>
         </div>
     @endif
 </div>
