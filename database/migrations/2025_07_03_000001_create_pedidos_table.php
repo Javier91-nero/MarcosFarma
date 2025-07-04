@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreatePedidosTable extends Migration
 {
@@ -13,7 +14,11 @@ class CreatePedidosTable extends Migration
             $table->unsignedBigInteger('id_cliente');
             $table->dateTime('fecha')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->decimal('total', 10, 2);
-            $table->foreign('id_cliente')->references('id_cliente')->on('cliente')->onDelete('cascade');
+
+            $table->foreign('id_cliente')
+                  ->references('id_cliente')
+                  ->on('cliente')
+                  ->onDelete('cascade');
         });
     }
 
@@ -22,3 +27,4 @@ class CreatePedidosTable extends Migration
         Schema::dropIfExists('pedidos');
     }
 }
+
