@@ -7,6 +7,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\DProductController;
 use App\Http\Controllers\PerfilController; 
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 // Página principal
 Route::get('/', function () {
@@ -50,3 +52,9 @@ Route::get('/product/{id}/details', [DProductController::class, 'details'])->nam
 // Rutas para perfil de usuario con middleware de autenticación
 Route::get('/perfil', [PerfilController::class, 'mostrarPerfil'])->name('perfil.mostrar');
 Route::post('/perfil', [PerfilController::class, 'actualizarPerfil'])->name('perfil.actualizar');
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
