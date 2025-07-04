@@ -47,12 +47,10 @@ class LoginController extends Controller
         $cliente->token = $token;
         $cliente->save();
 
-        // Guardar datos en sesión
+        // ✅ Guardar cliente completo en la sesión
         session([
-            'id_cliente' => $cliente->id_cliente,
-            'nombre'     => $cliente->nombre,
-            'rol'        => $cliente->rol,
-            'token'      => $token,
+            'cliente' => $cliente, // Esto permite acceder a $clienteAuth en las vistas
+            'token'   => $token,
         ]);
 
         // Redirigir por rol
@@ -66,8 +64,9 @@ class LoginController extends Controller
     public function logout()
     {
         // Borrar token del cliente
-        if (session()->has('id_cliente')) {
-            $cliente = Cliente::find(session('id_cliente'));
+        if (session()->has('cliente')) {
+            $cliente = session('cliente');
+            $cliente = Cliente::find($cliente->id_cliente);
             if ($cliente) {
                 $cliente->token = null;
                 $cliente->save();

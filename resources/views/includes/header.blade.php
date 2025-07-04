@@ -1,6 +1,7 @@
 @php
     $carrito = session('carrito', []);
     $totalItems = array_sum(array_column($carrito, 'cantidad'));
+    $clienteAuth = session('cliente');
 @endphp
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-2">
@@ -56,7 +57,7 @@
 
                 {{-- Usuario Autenticado / Login --}}
                 <li class="nav-item dropdown">
-                    @if(isset($clienteAuth))
+                    @if($clienteAuth)
                         {{-- Usuario autenticado --}}
                         <a class="nav-link dropdown-toggle text-white fw-medium d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle me-2"></i> {{ $clienteAuth->nombre }} {{ $clienteAuth->apellido }}

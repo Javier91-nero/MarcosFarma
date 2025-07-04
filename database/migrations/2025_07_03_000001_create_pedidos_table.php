@@ -13,7 +13,13 @@ class CreatePedidosTable extends Migration
             $table->id('id_pedido');
             $table->unsignedBigInteger('id_cliente');
             $table->dateTime('fecha')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->decimal('total', 10, 2);
+            $table->decimal('total', 10, 2)->default(0.00);
+
+            // Campos adicionales para checkout
+            $table->string('metodo_pago')->default('tarjeta');
+            $table->text('numero_tarjeta_cifrada')->nullable();
+
+            $table->timestamps();
 
             $table->foreign('id_cliente')
                   ->references('id_cliente')
@@ -27,4 +33,3 @@ class CreatePedidosTable extends Migration
         Schema::dropIfExists('pedidos');
     }
 }
-

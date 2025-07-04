@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\CheckoutController;
 
 // Página principal
 Route::get('/', function () {
@@ -66,6 +67,11 @@ Route::get('/mis-pedidos/{id}', [PedidoController::class, 'show'])->name('pedido
 Route::post('/mis-pedidos/{id}/repetir', [PedidoController::class, 'repetir'])->name('pedidos.repetir');
 
 Route::post('/carrito/agregar', [CarritoController::class, 'agregar'])->name('carrito.agregar');
-Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito.mostrar');
+Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito.index');
 Route::post('/carrito/actualizar', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
 Route::post('/carrito/eliminar', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout/procesar', [CheckoutController::class, 'procesar'])->name('checkout.procesar');
+Route::post('/checkout', [CheckoutController::class, 'realizar'])->name('checkout.realizar');
+

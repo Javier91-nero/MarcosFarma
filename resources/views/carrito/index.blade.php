@@ -81,9 +81,45 @@
             <a href="{{ url('/catalog') }}" class="btn btn-secondary me-2">
                 <i class="bi bi-arrow-left-circle me-1"></i> Seguir Comprando
             </a>
-            <a href="#" class="btn btn-success">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPago">
                 <i class="bi bi-credit-card-2-front me-1"></i> Proceder al Pago
-            </a>
+            </button>
+        </div>
+
+        {{-- Modal de Pago --}}
+        <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-4">
+                    <form method="POST" action="{{ route('checkout.realizar') }}">
+                        @csrf
+                        <div class="modal-header bg-primary text-white rounded-top-4">
+                            <h5 class="modal-title fw-semibold" id="modalPagoLabel">
+                                <i class="bi bi-credit-card-2-back me-2"></i>Datos de Pago
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="numero_tarjeta" class="form-label">Número de Tarjeta</label>
+                                <input type="text" name="numero_tarjeta" id="numero_tarjeta" class="form-control" required maxlength="16" pattern="\d{16}" placeholder="1234567812345678">
+                            </div>
+                            <div class="mb-3">
+                                <label for="metodo_pago" class="form-label">Método de Pago</label>
+                                <select name="metodo_pago" id="metodo_pago" class="form-select" required>
+                                    <option value="tarjeta">Tarjeta</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="total" value="{{ $total }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i> Confirmar Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     @endif
 </div>
