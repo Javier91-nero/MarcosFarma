@@ -72,4 +72,22 @@
         </div>
     </div>
 </div>
+
+{{-- SweetAlert2: animación de confirmación de compra --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (!sessionStorage.getItem('factura_mostrada')) {
+            Swal.fire({
+                title: '¡Pago exitoso!',
+                text: 'Tu pedido ha sido registrado correctamente.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+                timer: 5000,
+                timerProgressBar: true
+            });
+            sessionStorage.setItem('factura_mostrada', '1');
+        }
+    });
+</script>
 @endsection
