@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="container-md py-5">
-    {{-- Título --}}
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary">
             <i class="bi bi-bag-fill me-2"></i> Catálogo de Productos
@@ -38,47 +37,65 @@
         </div>
     </div>
 
-    {{-- Productos --}}
+    {{-- Agrupación lógica: mostrar sólo el producto con lote más cercano --}}
     <div class="row" id="productosGrid">
-        @forelse ($productos as $producto)
-            <div class="col-12 col-sm-6 col-lg-3 mb-4 producto-item"
-                 data-nombre="{{ strtolower($producto->nombre) }}"
-                 data-oferta="{{ $producto->oferta }}"
-                 data-precio="{{ $producto->precio }}">
-                <div class="card h-100 shadow rounded-4 border-0 position-relative">
+        @php
+            $agrupados = [];
+            foreach ($productos as $producto) {
+                $clave = strtolower($producto->nombre);
+                if (!isset($agrupados[$clave])) {
+                    $agrupados[$clave] = [];
+                }
+                $agrupados[$clave][] = $producto;
+            }
+        @endphp
 
-                    {{-- Oferta --}}
-                    @if ($producto->oferta)
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-3 fs-6">
-                            <i class="bi bi-tag-fill me-1"></i> Oferta
-                        </span>
-                    @endif
+        @forelse($agrupados as $grupo)
+            @php
+                usort($grupo, function($a, $b) {
+                    return strtotime($a->lote_mas_cercano->fecha_vencimiento ?? '9999-12-31') <=> strtotime($b->lote_mas_cercano->fecha_vencimiento ?? '9999-12-31');
+                });
+                $producto = $grupo[0];
+                $lote = $producto->lote_mas_cercano;
+            @endphp
 
-                    {{-- Imagen --}}
-                    <img src="{{ asset($producto->imagen) }}"
-                         class="card-img-top mx-auto p-4"
-                         alt="{{ $producto->nombre }}"
-                         style="height: 250px; object-fit: contain; max-width: 90%;">
+            @if($lote && $lote->cantidad > 0 && $lote->fecha_vencimiento >= now())
+                <div class="col-12 col-sm-6 col-lg-3 mb-4 producto-item"
+                     data-nombre="{{ strtolower($producto->nombre) }}"
+                     data-oferta="{{ $producto->oferta }}"
+                     data-precio="{{ $producto->precio }}">
+                    <div class="card h-100 shadow rounded-4 border-0 position-relative">
 
-                    {{-- Detalle --}}
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-semibold fs-5 text-center">{{ $producto->nombre }}</h5>
-                        <p class="card-text text-success fs-5 mb-2 text-center">
-                            <strong>Precio:</strong> S/ {{ number_format($producto->precio, 2) }}
-                        </p>
-                        <p class="card-text text-muted flex-grow-1 fs-6 text-center">{{ $producto->descripcion }}</p>
+                        @if ($producto->oferta)
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-3 fs-6">
+                                <i class="bi bi-tag-fill me-1"></i> Oferta
+                            </span>
+                        @endif
 
-                        <form action="{{ route('carrito.agregar') }}" method="POST" class="mt-3">
-                            @csrf
-                            <input type="hidden" name="id_producto" value="{{ $producto->id_producto }}">
-                            <input type="hidden" name="cantidad" value="1">
-                            <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                                <i class="bi bi-cart-plus fs-5"></i> Agregar al Carrito
-                            </button>
-                        </form>
+                        <img src="{{ asset($producto->imagen) }}"
+                             class="card-img-top mx-auto p-4"
+                             alt="{{ $producto->nombre }}"
+                             style="height: 250px; object-fit: contain; max-width: 90%;">
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-semibold fs-5 text-center">{{ $producto->nombre }}</h5>
+                            <p class="card-text text-success fs-5 mb-2 text-center">
+                                <strong>Precio:</strong> S/ {{ number_format($producto->precio, 2) }}
+                            </p>
+                            <p class="card-text text-muted flex-grow-1 fs-6 text-center">{{ $producto->descripcion }}</p>
+
+                            <form action="{{ route('carrito.agregar') }}" method="POST" class="mt-3">
+                                @csrf
+                                <input type="hidden" name="id_producto" value="{{ $producto->id_producto }}">
+                                <input type="hidden" name="cantidad" value="1">
+                                <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-cart-plus fs-5"></i> Agregar al Carrito
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
         @empty
             <div class="col-12">
                 <div class="alert alert-warning text-center fs-5">
@@ -89,7 +106,21 @@
     </div>
 </div>
 
+{{-- Toastr --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 @push('scripts')
 <script src="{{ asset('js/catalogo.js') }}"></script>
+
+<script>
+    @if(session('success'))
+        toastr.success("{{ session('success') }}", '¡Éxito!', { "progressBar": true, "closeButton": true });
+    @endif
+
+    @if(session('error'))
+        toastr.error("{{ session('error') }}", 'Error', { "progressBar": true, "closeButton": true });
+    @endif
+</script>
 @endpush
 @endsection
