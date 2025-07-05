@@ -47,9 +47,9 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 🧮 Métricas superiores
         $totalClientes = DB::table('cliente')->count();
         $totalProductos = DB::table('productos')->count();
+
         $productosPorVencer = DB::table('lotes')
             ->whereBetween('fecha_vencimiento', [now(), now()->addDays(30)])
             ->count();
@@ -61,7 +61,6 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->first();
 
-        // 📊 Productos más vendidos (para gráfico circular)
         $masVendidos = DB::table('detalle_pedido as dp')
             ->join('productos as p', 'dp.id_producto', '=', 'p.id_producto')
             ->select('p.nombre', DB::raw('SUM(dp.cantidad) as total'))
@@ -70,14 +69,14 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // 📈 Clientes registrados por mes (para gráfico de barras)
-        $clientesPorMes = DB::table('cliente')
-            ->select(DB::raw('MONTH(created_at) as mes'), DB::raw('COUNT(*) as cantidad'))
-            ->groupBy(DB::raw('MONTH(created_at)'))
-            ->pluck('cantidad', 'mes')
+        $clientesPorDia = DB::table('cliente')
+            ->select(DB::raw("DATE(created_at) as fecha"), DB::raw('COUNT(*) as total'))
+            ->groupBy(DB::raw("DATE(created_at)"))
+            ->orderBy('fecha', 'asc')
+            ->get()
+            ->pluck('total', 'fecha')
             ->toArray();
 
-        // 📋 Últimos 5 pedidos
         $ultimosPedidos = DB::table('pedidos')
             ->join('cliente', 'pedidos.id_cliente', '=', 'cliente.id_cliente')
             ->select('pedidos.id_pedido', 'cliente.nombre', 'pedidos.total', 'pedidos.fecha')
@@ -85,7 +84,6 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // 🚨 Productos críticos (vencidos o en 0)
         $productosCriticos = DB::table('productos as p')
             ->join('lotes as l', 'p.id_producto', '=', 'l.id_producto')
             ->where(function ($query) {
@@ -103,9 +101,39 @@ class DashboardController extends Controller
             'productosPorVencer'  => $productosPorVencer,
             'productoMasVendido'  => $productoMasVendido,
             'masVendidos'         => $masVendidos,
-            'clientesPorMes'      => $clientesPorMes,
+            'clientesPorMes'      => $clientesPorDia, // mejor renombrado sería clientesPorDia
             'ultimosPedidos'      => $ultimosPedidos,
             'productosCriticos'   => $productosCriticos
+        ]);
+    }
+
+    public function usuarios()
+    {
+        if (!session()->has('token') || session('rol') !== 'admin') {
+            return redirect()->route('login.form')->with([
+                'alert_message' => 'Debes iniciar sesión como administrador.',
+                'alert_type' => 'warning',
+            ]);
+        }
+
+        $usuarios = DB::table('cliente')
+            ->join('cuenta', 'cliente.id_cliente', '=', 'cuenta.id_cliente')
+            ->where('cliente.rol', 'cliente')
+            ->select(
+                'cliente.id_cliente',
+                'cliente.nombre',
+                'cliente.apellido',
+                'cliente.dni',
+                'cliente.telefono',
+                'cliente.correo',
+                'cuenta.validacion'
+            )
+            ->get();
+
+        return view('dashboard.users', [
+            'usuarios' => $usuarios,
+            'nombre'   => session('nombre'),
+            'token'    => session('token'),
         ]);
     }
 

@@ -29,11 +29,11 @@
                 <i class="bi bi-box-seam me-2"></i> Productos
             </a>
 
-            <a href="{{ url('dashboard/users.php') }}" class="nav-link d-flex align-items-center mb-2 {{ request()->is('dashboard/users.php') ? 'active fw-bold text-primary' : 'text-dark' }}">
+            <a href="{{ route('dashboard.usuarios') }}" class="nav-link d-flex align-items-center mb-2 {{ $currentRoute === 'dashboard.usuarios' ? 'active fw-bold text-primary' : 'text-dark' }}">
                 <i class="bi bi-people-fill me-2"></i> Usuarios
             </a>
 
-            <a href="{{ url('dashboard/login.php') }}" class="nav-link d-flex align-items-center mb-2 {{ request()->is('dashboard/login.php') ? 'active fw-bold text-primary' : 'text-dark' }}">
+            <a href="{{ route('dashboard.perfil') }}" class="nav-link d-flex align-items-center mb-2 {{ $currentRoute === 'dashboard.perfil' ? 'active fw-bold text-primary' : 'text-dark' }}">
                 <i class="bi bi-person-circle me-2"></i> Perfil
             </a>
         </nav>
@@ -61,11 +61,11 @@
             <i class="bi bi-box-seam me-2"></i> Productos
         </a>
 
-        <a href="{{ url('dashboard/users.php') }}" class="nav-link d-flex align-items-center mb-2 {{ request()->is('dashboard/users.php') ? 'active fw-bold text-primary' : 'text-dark' }}">
+        <a href="{{ route('dashboard.usuarios') }}" class="nav-link d-flex align-items-center mb-2 {{ $currentRoute === 'dashboard.usuarios' ? 'active fw-bold text-primary' : 'text-dark' }}">
             <i class="bi bi-people-fill me-2"></i> Usuarios
         </a>
 
-        <a href="{{ url('dashboard/login.php') }}" class="nav-link d-flex align-items-center mb-2 {{ request()->is('dashboard/login.php') ? 'active fw-bold text-primary' : 'text-dark' }}">
+        <a href="{{ route('dashboard.perfil') }}" class="nav-link d-flex align-items-center mb-2 {{ $currentRoute === 'dashboard.perfil' ? 'active fw-bold text-primary' : 'text-dark' }}">
             <i class="bi bi-person-circle me-2"></i> Perfil
         </a>
     </nav>

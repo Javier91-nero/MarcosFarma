@@ -6,22 +6,22 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\DProductController;
-use App\Http\Controllers\PerfilController; 
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\CheckoutController;
 
-// Página principal
+// Página principal (Inicio)
 Route::get('/', function () {
     return view('index');
 })->name('home');
 
-// Catálogo público
+// Catálogo público de productos
 Route::get('/catalog', [ProductoController::class, 'index'])->name('catalog');
 
-// Registro
+// Registro de cliente
 Route::get('/register', [RegistroController::class, 'mostrarFormulario'])->name('registro.formulario');
 Route::post('/register', [RegistroController::class, 'registrar'])->name('registro.registrar');
 
@@ -32,7 +32,7 @@ Route::post('/register/confirmar', [RegistroController::class, 'confirmarCodigo'
 // Reenviar código de verificación
 Route::post('/register/reenviar', [RegistroController::class, 'reenviarCodigo'])->name('registro.reenviar');
 
-// Login / Logout
+// Login y logout
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -40,40 +40,49 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Validación del token de administrador
 Route::get('/dashboard/validation', [DashboardController::class, 'validarToken'])->name('dashboard.validation');
 
-// Dashboard principal
+// Dashboard principal (Administrador)
 Route::get('/dashboard', [DashboardController::class, 'mostrarDashboard'])->name('dashboard.index');
-Route::get('/dashboard/validar-token', [DashboardController::class, 'validarToken'])->name('dashboard.validar');
+
+// Exportar pedidos a CSV
 Route::get('/dashboard/exportar-csv', [DashboardController::class, 'exportarCSV'])->name('dashboard.export.csv');
 
+// NUEVO: Vista de usuarios registrados (para administración)
+Route::get('/dashboard/usuarios', [DashboardController::class, 'usuarios'])->name('dashboard.usuarios');
 
-// CRUD de productos para admin
+// NUEVO: Vista del perfil del administrador
+Route::get('/dashboard/perfil', function () {
+    return view('dashboard.perfil');
+})->name('dashboard.perfil');
+
+// CRUD de productos (Administración)
 Route::get('/products', [DProductController::class, 'index'])->name('product.index');
 Route::post('/products', [DProductController::class, 'store'])->name('product.store');
 Route::get('/product/{id}', [DProductController::class, 'show'])->name('product.show');
 Route::put('/product/{id}/update', [DProductController::class, 'update'])->name('product.update');
-
-// Vista detallada de producto
 Route::get('/product/{id}/details', [DProductController::class, 'details'])->name('product.details');
 
-// Rutas para perfil de usuario con middleware de autenticación
+// Perfil de cliente (editar datos)
 Route::get('/perfil', [PerfilController::class, 'mostrarPerfil'])->name('perfil.mostrar');
 Route::post('/perfil', [PerfilController::class, 'actualizarPerfil'])->name('perfil.actualizar');
 
+// Recuperar contraseña
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
-
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
+// Historial de pedidos del cliente
 Route::get('/mis-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
 Route::get('/mis-pedidos/{id}', [PedidoController::class, 'show'])->name('pedidos.show');
 Route::post('/mis-pedidos/{id}/repetir', [PedidoController::class, 'repetir'])->name('pedidos.repetir');
 
+// Carrito de compras
 Route::post('/carrito/agregar', [CarritoController::class, 'agregar'])->name('carrito.agregar');
 Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito.index');
 Route::post('/carrito/actualizar', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
 Route::post('/carrito/eliminar', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
 
+// Checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/procesar', [CheckoutController::class, 'procesar'])->name('checkout.procesar');
 Route::post('/checkout', [CheckoutController::class, 'realizar'])->name('checkout.realizar');

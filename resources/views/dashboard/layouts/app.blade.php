@@ -15,6 +15,7 @@
         body {
             padding-top: 70px;
         }
+
         .sidebar {
             position: fixed;
             top: 70px;
@@ -25,6 +26,7 @@
             padding-top: 20px;
             z-index: 1030;
         }
+
         .main-content {
             margin-left: 250px;
             padding: 20px;

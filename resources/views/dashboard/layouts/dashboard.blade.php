@@ -30,13 +30,19 @@
         .alert i {
             margin-right: 8px;
         }
+
+        body {
+            padding-top: 70px;
+        }
     </style>
 </head>
 <body>
 
-    <main class="pt-5">
-        <div class="container">
+    {{-- Header y barra lateral se incluyen desde app.blade.php --}}
+    @include('dashboard.includes.horizontal')
 
+    <main class="pt-4">
+        <div class="container">
             {{-- Mensaje de éxito --}}
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">

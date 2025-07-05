@@ -31,6 +31,7 @@
                 <i class="bi bi-person-circle me-1"></i> {{ $user_name }}
             </span>
 
+            {{-- Notificaciones --}}
             <div class="dropdown">
                 <button class="btn btn-outline-primary position-relative rounded-circle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
                     <i class="bi bi-bell fs-5"></i>
@@ -39,37 +40,63 @@
                     @endif
                 </button>
 
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="min-width: 300px;">
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2" aria-labelledby="notificationDropdown" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
                     @if (count($lowStockProducts) === 0 && count($expiringLots) === 0)
-                        <li><span class="dropdown-item text-muted"><i class="bi bi-check-circle me-2"></i>No hay notificaciones</span></li>
+                        <li>
+                            <span class="dropdown-item text-muted text-center">
+                                <i class="bi bi-check-circle me-2 text-success"></i> No hay notificaciones pendientes
+                            </span>
+                        </li>
+                    @else
+                        @if(count($lowStockProducts) > 0)
+                            <li>
+                                <h6 class="dropdown-header text-dark border-bottom">
+                                    <i class="bi bi-box me-1"></i> Productos con bajo stock
+                                </h6>
+                            </li>
+                            @foreach ($lowStockProducts as $product)
+                                <li>
+                                    <a href="{{ route('product.details', $product->id_producto) }}" class="dropdown-item d-flex align-items-start gap-2">
+                                        <i class="bi bi-exclamation-triangle text-warning fs-5 mt-1"></i>
+                                        <div>
+                                            <strong>{{ $product->nombre }}</strong><br>
+                                            <small>Stock actual: {{ $product->total_stock }}</small>
+                                        </div>
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endif
+
+                        @if(count($expiringLots) > 0)
+                            <li class="mt-2">
+                                <h6 class="dropdown-header text-dark border-bottom">
+                                    <i class="bi bi-hourglass-split me-1"></i> Lotes por vencer
+                                </h6>
+                            </li>
+                            @foreach ($expiringLots as $lote)
+                                @php
+                                    $fechaVenc = new DateTime($lote->fecha_vencimiento);
+                                    $hoy = new DateTime();
+                                    $vencido = $fechaVenc < $hoy;
+                                @endphp
+                                <li>
+                                    <a href="{{ route('product.details', $lote->id_producto) }}" class="dropdown-item d-flex align-items-start gap-2">
+                                        <i class="bi {{ $vencido ? 'bi-x-octagon-fill text-danger' : 'bi-clock-history text-danger' }} fs-5 mt-1"></i>
+                                        <div class="{{ $vencido ? 'text-danger fw-bold' : 'text-danger' }}">
+                                            <strong>{{ $lote->nombre }}</strong><br>
+                                            <small>Lote: {{ $lote->nro_lote }} - 
+                                                {{ $vencido ? '¡VENCIDO!' : 'Vence el ' . $fechaVenc->format('d/m/Y') }}
+                                            </small>
+                                        </div>
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endif
                     @endif
-
-                    @foreach ($lowStockProducts as $product)
-                        <li>
-                            <a href="{{ route('product.details', $product->id_producto) }}" class="dropdown-item text-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ $product->nombre }} - Stock: {{ $product->total_stock }}
-                            </a>
-                        </li>
-                    @endforeach
-
-                    @foreach ($expiringLots as $lote)
-                        @php
-                            $fechaVenc = new DateTime($lote->fecha_vencimiento);
-                            $hoy = new DateTime();
-                            $vencido = $fechaVenc < $hoy;
-                        @endphp
-                        <li>
-                            <a href="{{ route('product.details', $lote->id_producto) }}" class="dropdown-item {{ $vencido ? 'text-danger' : 'text-warning' }}">
-                                <i class="bi {{ $vencido ? 'bi-x-circle' : 'bi-clock-history' }} me-2"></i>
-                                {{ $lote->nombre }} - Lote {{ $lote->nro_lote }}:
-                                {{ $vencido ? '¡Vencido!' : 'Vence pronto (' . $fechaVenc->format('d/m/Y') . ')' }}
-                            </a>
-                        </li>
-                    @endforeach
                 </ul>
             </div>
 
+            {{-- Botón de cerrar sesión --}}
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="btn btn-outline-danger rounded-circle" title="Cerrar sesión">
