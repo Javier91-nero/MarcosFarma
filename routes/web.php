@@ -77,3 +77,6 @@ Route::post('/carrito/eliminar', [CarritoController::class, 'eliminar'])->name('
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/procesar', [CheckoutController::class, 'procesar'])->name('checkout.procesar');
 Route::post('/checkout', [CheckoutController::class, 'realizar'])->name('checkout.realizar');
+
+// Factura
+Route::get('/checkout/factura/{id}', [CheckoutController::class, 'factura'])->name('checkout.factura');

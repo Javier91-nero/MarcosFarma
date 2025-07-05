@@ -7,19 +7,20 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use App\Models\Pedido;
 use App\Models\DetallePedido;
+use App\Models\Producto;
+use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
     public function realizar(Request $request)
     {
-        // Validar campos del formulario
+        // Validación
         $request->validate([
             'numero_tarjeta' => 'required|digits:16',
             'metodo_pago' => 'required|in:tarjeta',
             'total' => 'required|numeric|min:0.1'
         ]);
 
-        // Verificar que el cliente esté autenticado
         $cliente = session('cliente');
         if (!$cliente) {
             return redirect('/login')->with('error', 'Debe iniciar sesión para pagar.');
@@ -36,11 +37,25 @@ class CheckoutController extends Controller
             // 1. Crear el pedido
             $pedido = Pedido::create([
                 'id_cliente' => $cliente->id_cliente,
-                'total' => $request->total
+                'total' => $request->total,
+                'metodo_pago' => $request->metodo_pago,
+                'numero_tarjeta_cifrada' => encrypt($request->numero_tarjeta),
+                'fecha' => Carbon::now()
             ]);
 
-            // 2. Crear los detalles del pedido
+            // 2. Detalles del pedido y actualización de stock
             foreach ($carrito as $item) {
+                // Verificar stock actual
+                $lote = DB::table('lotes')
+                    ->where('id_producto', $item['id'])
+                    ->where('cantidad', '>=', $item['cantidad'])
+                    ->orderBy('fecha_vencimiento')
+                    ->first();
+
+                if (!$lote) {
+                    throw new \Exception("Stock insuficiente para el producto: " . $item['nombre']);
+                }
+
                 DetallePedido::create([
                     'id_pedido' => $pedido->id_pedido,
                     'id_producto' => $item['id'],
@@ -48,24 +63,30 @@ class CheckoutController extends Controller
                     'precio_unitario' => $item['precio']
                 ]);
 
-                // 3. Descontar stock del lote más cercano (si deseas manejar stock)
+                // Descontar del lote
                 DB::table('lotes')
-                    ->where('id_producto', $item['id'])
-                    ->where('cantidad', '>', 0)
-                    ->orderBy('fecha_vencimiento')
-                    ->limit(1)
+                    ->where('id_lote', $lote->id_lote)
                     ->decrement('cantidad', $item['cantidad']);
             }
 
             DB::commit();
 
-            // 4. Vaciar carrito
+            // Limpiar carrito
             Session::forget('carrito');
 
-            return redirect()->route('carrito.index')->with('success', '¡Pago realizado con éxito! Pedido registrado.');
+            // Redirigir a la factura
+            return redirect()->route('checkout.factura', ['id' => $pedido->id_pedido]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Error al procesar el pago: ' . $e->getMessage());
         }
+    }
+
+    public function factura($id)
+    {
+        $pedido = Pedido::with(['cliente', 'detalles.producto'])->findOrFail($id);
+
+        return view('carrito.factura', compact('pedido'));
     }
 }
