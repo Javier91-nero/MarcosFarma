@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\CheckoutController;
+use Illuminate\Support\Facades\Log;
+use Sentry\State\HubInterface;
 
 // Página principal (Inicio)
 Route::get('/', function () {
@@ -89,3 +91,15 @@ Route::post('/checkout', [CheckoutController::class, 'realizar'])->name('checkou
 
 // Factura
 Route::get('/checkout/factura/{id}', [CheckoutController::class, 'factura'])->name('checkout.factura');
+
+// Ruta para probar Sentry
+Route::get('/sentry-test', function (HubInterface $sentry) {
+    try {
+        throw new Exception('⚠️ Excepción de prueba enviada a Sentry desde Laravel.');
+    } catch (\Throwable $e) {
+        $sentry->captureException($e);
+        Log::error('Excepción capturada y enviada a Sentry: ' . $e->getMessage());
+    }
+
+    return '✅ Error de prueba enviado correctamente a Sentry.';
+});

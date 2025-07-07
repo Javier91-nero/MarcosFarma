@@ -9,13 +9,14 @@ parameters:
         - routes
 
     excludePaths:
-        - tests/*
-        - bootstrap/*
-        - database/*
-        - public/*
-        - resources/*
-        - node_modules/*
-        - storage/*
-        - vendor/*
+        analyse:
+            - tests/*
+            - bootstrap/*
+            - database/*
+            - public/*
+            - resources/*
+            - node_modules/*
+            - storage/*
+            - vendor/*
 
     inferPrivatePropertyTypeFromConstructor: true
